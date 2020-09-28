@@ -43,7 +43,17 @@ class Enemy(object):
 
 # TODO 4.背景类
 class Background(object):
-    pass
+    def __init__(self, x, y, window, image_path):
+        self.position_x = x
+        self.position_y = y
+        self.window = window
+        self.image = pygame.image.load(image_path)
+
+    def display(self):
+        self.window.blit(self.image, (self.position_x, self.position_y))
+
+    def move(self):
+        self.position_y += 1
 
 
 # TODO 5.游戏类
@@ -67,7 +77,7 @@ class Game(object):
 
         # 游戏背景图片对象添加到游戏窗口中
         # 加载本地资源图片 返回一个游戏背景图片对象
-        self.bg_image = pygame.image.load("res/img_bg_level_1.jpg")
+        self.bg_image_path = "res/img_bg_level_1.jpg"
 
         # 本地资源图英雄飞机图片路径
         self.hero_image_path = "res/hero2.png"
@@ -79,13 +89,16 @@ class Game(object):
         pygame.mixer.music.play(-1)
 
         # 创建实例对象
+        # 玩家飞机实例
         self.player = Plane(196, 660, self.window, self.hero_image_path)
+        # 地图背景实例
+        self.background = Background(0, 0, self.window, self.bg_image_path)
 
     # TODO 5.2 描绘图形
     def draw(self):
         # 图片添加到窗口中
         # blit(添加到游戏窗口中图片对象, (0, 0)) (x, y) 坐标
-        self.window.blit(self.bg_image, (0, 0))
+        self.background.display()
         # 添加飞机
         self.player.display()
 
@@ -145,6 +158,8 @@ class Game(object):
     def run(self):
         # 死循环 在死循环中监听无论鼠标点击事件 或者键盘按键的事件
         while True:
+            self.background.move()  # 调用背景移动操作，构造背景向下移动效果
+            self.background.display()  # 刷新移动后的图片
             self.draw()
             self.event()
             self.update()
