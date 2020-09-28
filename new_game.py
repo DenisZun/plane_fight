@@ -4,31 +4,52 @@ import sys
 WINDOW_WIDTH, WINDOW_HEIGHT = 512, 768
 
 
-# TODO 1.玩家飞机
-class Plane(object):
+# TODO 6.模型基类
+class Model(object):
     def __init__(self, x, y, window, image_path):
         self.position_x = x
         self.position_y = y
         self.window = window
+        # 获取图片矩形
         self.image = pygame.image.load(image_path)
-
-    def fire(self):
-        pass
+        self.img_rect = self.image.get_rect()
 
     def display(self):
         self.window.blit(self.image, (self.position_x, self.position_y))
 
+    def print_img_rect(self):
+        print("img_rect[0]:{}, img_rect[1]:{}, img_rect[2]:{}, img_rect[3]:{}".format(
+            self.img_rect[0], self.img_rect[1], self.img_rect[2], self.img_rect[3]
+        ))
+
+
+# TODO 1.玩家飞机
+class Plane(Model):
+    # def __init__(self, x, y, window, image_path):
+    #     self.position_x = x
+    #     self.position_y = y
+    #     self.window = window
+    #     self.image = pygame.image.load(image_path)
+    # img_rect[0]:0, img_rect[1]:0, img_rect[2]:120, img_rect[3]:78
+
+    def fire(self):
+        pass
+
     def move_left(self):
-        self.position_x -= 5
+        if self.position_x > 0:
+            self.position_x -= 5
 
     def move_right(self):
-        self.position_x += 5
+        if self.position_x <= WINDOW_WIDTH - self.img_rect[2]:
+            self.position_x += 5
 
     def move_up(self):
-        self.position_y -= 5
+        if self.position_y >= 0:
+            self.position_y -= 5
 
     def move_down(self):
-        self.position_y += 5
+        if self.position_y <= WINDOW_HEIGHT - self.img_rect[3]:
+            self.position_y += 5
 
 
 # TODO 2.子弹类
@@ -42,18 +63,28 @@ class Enemy(object):
 
 
 # TODO 4.背景类
-class Background(object):
-    def __init__(self, x, y, window, image_path):
-        self.position_x = x
-        self.position_y = y
-        self.window = window
-        self.image = pygame.image.load(image_path)
+class Background(Model):
+    # def __init__(self, x, y, window, image_path):
+    #     self.position_x = x
+    #     self.position_y = y
+    #     self.window = window
+    #     self.image = pygame.image.load(image_path)
+
+    # def display(self):
+    #     self.window.blit(self.image, (self.position_x, self.position_y))
+    #     self.window.blit(self.image, (self.position_x, self.position_y + WINDOW_HEIGHT))
+
+    # img_rect[0]:0, img_rect[1]:0, img_rect[2]:512, img_rect[3]:768
+    def move(self):
+        # 实现背景的反复移动
+        if self.position_y < WINDOW_HEIGHT:
+            self.position_y += 1
+        else:
+            self.position_y = 0
 
     def display(self):
         self.window.blit(self.image, (self.position_x, self.position_y))
-
-    def move(self):
-        self.position_y += 1
+        self.window.blit(self.image, (self.position_x, self.position_y - self.img_rect[3]))
 
 
 # TODO 5.游戏类
@@ -87,7 +118,9 @@ class Game(object):
         self.boom_sound = pygame.mixer.Sound("./res/baozha.ogg")
         # 循环播放背景音乐
         pygame.mixer.music.play(-1)
+        self.init_model()
 
+    def init_model(self):
         # 创建实例对象
         # 玩家飞机实例
         self.player = Plane(196, 660, self.window, self.hero_image_path)
@@ -157,6 +190,8 @@ class Game(object):
     # TODO 5.0 启动游戏
     def run(self):
         # 死循环 在死循环中监听无论鼠标点击事件 或者键盘按键的事件
+        self.background.print_img_rect()
+        self.player.print_img_rect()
         while True:
             self.background.move()  # 调用背景移动操作，构造背景向下移动效果
             self.background.display()  # 刷新移动后的图片
