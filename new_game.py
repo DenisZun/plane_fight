@@ -41,13 +41,10 @@ class Plane(object):
         self.position_y = y
         self.window = window
         self.image = pygame.image.load(image_path)
-        self.img_rect = self.image.get_rect()
 
     def display(self):
         """贴图"""
         self.window.blit(self.image, (self.position_x, self.position_y))
-        for data in self.img_rect:
-            print(data)
 
     def move_left(self):
         """往左飞"""
