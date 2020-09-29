@@ -1,3 +1,4 @@
+import random
 import pygame
 import sys
 
@@ -17,23 +18,35 @@ class Model(object):
     def display(self):
         self.window.blit(self.image, (self.position_x, self.position_y))
 
-    def print_img_rect(self):
-        print("img_rect[0]:{}, img_rect[1]:{}, img_rect[2]:{}, img_rect[3]:{}".format(
-            self.img_rect[0], self.img_rect[1], self.img_rect[2], self.img_rect[3]
-        ))
-
 
 # TODO 1.玩家飞机
 class Plane(Model):
-    # def __init__(self, x, y, window, image_path):
-    #     self.position_x = x
-    #     self.position_y = y
-    #     self.window = window
-    #     self.image = pygame.image.load(image_path)
-    # img_rect[0]:0, img_rect[1]:0, img_rect[2]:120, img_rect[3]:78
+    def __init__(self, x, y, window, image_path):
+        super(Plane, self).__init__(x, y, window, image_path)
+        self.hero_bullet_image_path = "res/hero_bullet_7.png"
+        self.bullet_list = []
 
     def fire(self):
-        pass
+        bullet_1 = Bullet(self.position_x + 5, self.position_y - 59, self.window, self.hero_bullet_image_path)
+        bullet_2 = Bullet(self.position_x + 85, self.position_y - 59, self.window, self.hero_bullet_image_path)
+        bullet_1.display()
+        bullet_2.display()
+        self.bullet_list.append([bullet_1, bullet_2])
+
+    def show_bullet(self):
+        delete_bullets = []
+        for bullet_lis in self.bullet_list:
+            for bullet in bullet_lis:
+                if bullet.position_y > -59:
+                    bullet.display()
+                    bullet.move()
+                else:
+                    delete_bullets.append(bullet)
+
+        for out_window_bullet in delete_bullets:
+            for bullet_lis in self.bullet_list:
+                if out_window_bullet in bullet_lis:
+                    self.bullet_list.remove(bullet_lis)
 
     def move_left(self):
         if self.position_x > 0:
@@ -53,28 +66,18 @@ class Plane(Model):
 
 
 # TODO 2.子弹类
-class Bullet(object):
-    pass
+class Bullet(Model):
+    def move(self):
+        self.position_y -= 5
 
 
 # TODO 3.敌机类
-class Enemy(object):
+class Enemy(Model):
     pass
 
 
 # TODO 4.背景类
 class Background(Model):
-    # def __init__(self, x, y, window, image_path):
-    #     self.position_x = x
-    #     self.position_y = y
-    #     self.window = window
-    #     self.image = pygame.image.load(image_path)
-
-    # def display(self):
-    #     self.window.blit(self.image, (self.position_x, self.position_y))
-    #     self.window.blit(self.image, (self.position_x, self.position_y + WINDOW_HEIGHT))
-
-    # img_rect[0]:0, img_rect[1]:0, img_rect[2]:512, img_rect[3]:768
     def move(self):
         # 实现背景的反复移动
         if self.position_y < WINDOW_HEIGHT:
@@ -108,10 +111,11 @@ class Game(object):
 
         # 游戏背景图片对象添加到游戏窗口中
         # 加载本地资源图片 返回一个游戏背景图片对象
-        self.bg_image_path = "res/img_bg_level_1.jpg"
+        self.bg_image_path = "res/img_bg_level_%d.jpg" % random.randint(1, 5)
 
         # 本地资源图英雄飞机图片路径
         self.hero_image_path = "res/hero2.png"
+        self.hero_bullet_image_path = "res/bullet_10.png"
         # 加载背景音乐
         pygame.mixer.music.load("./res/bg2.ogg")
         # 加载音效
@@ -120,6 +124,7 @@ class Game(object):
         pygame.mixer.music.play(-1)
         self.init_model()
 
+    # TODO 5.6 模型初始实例化
     def init_model(self):
         # 创建实例对象
         # 玩家飞机实例
@@ -134,6 +139,8 @@ class Game(object):
         self.background.display()
         # 添加飞机
         self.player.display()
+        # TODO bug记录
+        self.player.show_bullet()
 
     # TODO 5.3 退出游戏
     def quit(self):
@@ -147,6 +154,7 @@ class Game(object):
     def event(self):
         # 获取所有游戏窗口的中的事件监听-> 列表
         event_list = pygame.event.get()
+        mouse_state = pygame.mouse.get_pressed()
         # 遍历所有的事件
         for event in event_list:
             # 判断如果是鼠标点击了
@@ -161,6 +169,15 @@ class Game(object):
                 # 开火方法
                 if event.key == pygame.K_SPACE:
                     # 播放音效
+                    self.player.fire()
+                    self.boom_sound.play()
+                    print("发射子弹 biubiubiu")
+
+            # 监听鼠标事件
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if mouse_state[0] == 1:
+                    # 播放音效
+                    self.player.fire()
                     self.boom_sound.play()
                     print("发射子弹 biubiubiu")
 
@@ -190,8 +207,6 @@ class Game(object):
     # TODO 5.0 启动游戏
     def run(self):
         # 死循环 在死循环中监听无论鼠标点击事件 或者键盘按键的事件
-        self.background.print_img_rect()
-        self.player.print_img_rect()
         while True:
             self.background.move()  # 调用背景移动操作，构造背景向下移动效果
             self.background.display()  # 刷新移动后的图片
