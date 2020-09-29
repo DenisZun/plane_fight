@@ -4,6 +4,7 @@ import sys
 import time
 
 WINDOW_WIDTH, WINDOW_HEIGHT = 512, 768
+enemy_lis = []
 
 
 # TODO 6.模型基类
@@ -44,6 +45,13 @@ class Plane(Model):
                 else:
                     delete_bullets.append(bullet)
 
+        for enemy in enemy_lis:
+            for bullet_lis in self.bullet_list:
+                for bullet in bullet_lis:
+                    if bullet.is_hit_enemy(enemy):
+                        enemy.is_hit = True
+                        delete_bullets.append(bullet)
+
         for out_window_bullet in delete_bullets:
             for bullet_lis in self.bullet_list:
                 if out_window_bullet in bullet_lis:
@@ -74,6 +82,23 @@ class Bullet(Model):
     def enemy_move(self):
         self.position_y += 7
 
+    def is_hit_enemy(self, enemy):
+        """
+        判断敌机中弹与否
+        判断是否碰撞
+        colliderect(
+            pygame.Rect(self.x, self.y, 20, 31),
+            pygame.Rect(enemy.x, enemy.y, 100, 68)
+        )
+        """
+        if pygame.Rect.colliderect(
+            pygame.Rect(self.position_x, self.position_y, 20, 73),
+            pygame.Rect(enemy.position_x, enemy.position_y, 100, 68)
+        ):
+            return True  # TODO 敌机被击中
+        else:
+            return False  # TODO 敌机未击中
+
 
 # TODO 3.敌机类
 class Enemy(Model):
@@ -81,6 +106,7 @@ class Enemy(Model):
         super(Enemy, self).__init__(x, y, window, image_path)
         self.enemy_bullet_image_path = "res/bullet_3.png"
         self.bullet_list = []
+        self.is_hit = False
 
     def move(self):
         self.position_y += 5
@@ -89,6 +115,7 @@ class Enemy(Model):
             self.position_y = 0
 
     def fire(self):
+        # 敌机随机发射子弹
         random_num = random.randint(1, 50)
         if random_num == 20:
             bullet = Bullet(self.position_x + 40, self.position_y + 60, self.window, self.enemy_bullet_image_path)
@@ -106,6 +133,14 @@ class Enemy(Model):
 
         for out_window_bullet in delete_bullets:
             self.bullet_list.remove(out_window_bullet)
+
+    def display(self):
+        if self.is_hit:
+            self.position_x = random.randint(0, WINDOW_WIDTH - 100)
+            self.position_y = 0
+            self.is_hit = False
+
+        self.window.blit(self.image, (self.position_x, self.position_y))
 
 
 # TODO 4.背景类
@@ -168,12 +203,19 @@ class Game(object):
         self.background = Background(0, 0, self.window, self.bg_image_path)
         # 敌机对象实例
         self.enemy1 = Enemy(random.randint(120, WINDOW_WIDTH - 120), 0, self.window, "res/img-plane_%d.png" % random.randint(1, 7))
-        self.enemy2 = Enemy(random.randint(120, WINDOW_WIDTH - 120), random.randint(0, WINDOW_HEIGHT - 68), self.window, "res/img-plane_%d.png" % random.randint(1, 7))
-        self.enemy3 = Enemy(random.randint(120, WINDOW_WIDTH - 120), random.randint(0, WINDOW_HEIGHT - 68), self.window, "res/img-plane_%d.png" % random.randint(1, 7))
-        self.enemy4 = Enemy(random.randint(120, WINDOW_WIDTH - 120), random.randint(0, WINDOW_HEIGHT - 68), self.window, "res/img-plane_%d.png" % random.randint(1, 7))
-        self.enemy5 = Enemy(random.randint(120, WINDOW_WIDTH - 120), random.randint(0, WINDOW_HEIGHT - 68), self.window, "res/img-plane_%d.png" % random.randint(1, 7))
-        self.enemy6 = Enemy(random.randint(120, WINDOW_WIDTH - 120), random.randint(0, WINDOW_HEIGHT - 68), self.window, "res/img-plane_%d.png" % random.randint(1, 7))
-        self.enemy_lis = [self.enemy1, self.enemy2, self.enemy3, self.enemy4, self.enemy5, self.enemy6]
+        self.enemy2 = Enemy(random.randint(120, WINDOW_WIDTH - 120), random.randint(0, WINDOW_HEIGHT - 68), self.window,
+                            "res/img-plane_%d.png" % random.randint(1, 7))
+        self.enemy3 = Enemy(random.randint(120, WINDOW_WIDTH - 120), random.randint(0, WINDOW_HEIGHT - 68), self.window,
+                            "res/img-plane_%d.png" % random.randint(1, 7))
+        self.enemy4 = Enemy(random.randint(120, WINDOW_WIDTH - 120), random.randint(0, WINDOW_HEIGHT - 68), self.window,
+                            "res/img-plane_%d.png" % random.randint(1, 7))
+        self.enemy5 = Enemy(random.randint(120, WINDOW_WIDTH - 120), random.randint(0, WINDOW_HEIGHT - 68), self.window,
+                            "res/img-plane_%d.png" % random.randint(1, 7))
+        self.enemy6 = Enemy(random.randint(120, WINDOW_WIDTH - 120), random.randint(0, WINDOW_HEIGHT - 68), self.window,
+                            "res/img-plane_%d.png" % random.randint(1, 7))
+        global enemy_lis
+        enemy_lis = [self.enemy1, self.enemy2, self.enemy3, self.enemy4, self.enemy5, self.enemy6]
+        self.enemy_lis = enemy_lis
 
     # TODO 5.2 描绘图形
     def draw(self):
@@ -185,7 +227,6 @@ class Game(object):
         for enemy in self.enemy_lis:
             enemy.display()
             enemy.show_bullet()
-            # enemy.move()
         # TODO bug记录
         self.player.show_bullet()
 
@@ -258,9 +299,9 @@ class Game(object):
             self.background.move()  # 调用背景移动操作，构造背景向下移动效果
             self.background.display()  # 刷新移动后的图片
             for enemy in self.enemy_lis:
-                enemy.move()
-                # time.sleep(0.5)
-                enemy.fire()
+                if not enemy.is_hit:
+                    enemy.move()
+                    enemy.fire()
             self.draw()
             self.event()
             self.update()
