@@ -1,6 +1,5 @@
 from model_mixin import ModelMixin
 from bullet import Bullet
-# from game import enemy_lis
 
 WINDOW_WIDTH, WINDOW_HEIGHT = 512, 768
 

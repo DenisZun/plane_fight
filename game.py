@@ -18,29 +18,20 @@ class Game(object):
         # TODO 5.1 游戏基本配置信息（公共变量或只执行一遍的）
         # pygame进行实例化
         pygame.init()
-
         # 创建游戏窗口-> 返回一个游戏窗口对象
-        # set_mode([400, 400]) -> (列表)[游戏窗口的宽度, 游戏窗口的高度]
-        # 单位是像素
         self.window = pygame.display.set_mode([WINDOW_WIDTH, WINDOW_HEIGHT])
-
         # 设置游戏窗口的标题
         pygame.display.set_caption("飞机大战")
         # 加载本地资源图片 返回一个图片对象
         self.logo_image = pygame.image.load("res/app.ico")
         # 设置游戏窗口的logo
         pygame.display.set_icon(self.logo_image)
-
-        # 游戏背景图片对象添加到游戏窗口中
-        # 加载本地资源图片 返回一个游戏背景图片对象
+        # 背景图片路径
         self.bg_image_path = "res/img_bg_level_%d.jpg" % random.randint(1, 5)
-
         # 本地资源图英雄飞机图片路径
         self.hero_image_path = "res/hero2.png"
-        self.hero_bullet_image_path = "res/bullet_10.png"
-        # 敌机贴图
+        # 敌机贴图路径
         self.enemy_image_path = "res/img-plane_%d.png" % random.randint(1, 7)
-        # self.enemy_bullet_image_path = "res/bullet_3.png"
         # 加载背景音乐
         pygame.mixer.music.load("./res/bg2.ogg")
         # 加载音效
@@ -95,7 +86,28 @@ class Game(object):
         sys.exit()
 
     # TODO 5.4 监听事件
-    def event(self):
+    def move_event(self):
+        # 玩家移动操作
+        # 监听键盘中的按键长按-> 元组(只有两种情况 0 或者 1) -> ASCII
+        pressed_keys = pygame.key.get_pressed()
+        # 判断向上的按键是否在长按(1)
+        if pressed_keys[pygame.K_UP] or pressed_keys[pygame.K_w]:
+            self.player.move_up()
+
+        # 判断向下的按键是否在长按(1)
+        if pressed_keys[pygame.K_DOWN] or pressed_keys[pygame.K_s]:
+            self.player.move_down()
+
+        # 判断向左的按键是否在长按(1)
+        if pressed_keys[pygame.K_LEFT] or pressed_keys[pygame.K_a]:
+            self.player.move_left()
+
+        # 判断向右的按键是否在长按(1)
+        if pressed_keys[pygame.K_RIGHT] or pressed_keys[pygame.K_d]:
+            self.player.move_right()
+
+    def common_event(self):
+        # 玩家常规操作退出，开火
         # 获取所有游戏窗口的中的事件监听-> 列表
         event_list = pygame.event.get()
         mouse_state = pygame.mouse.get_pressed()
@@ -115,7 +127,6 @@ class Game(object):
                     # 播放音效
                     self.player.fire()
                     self.boom_sound.play()
-                    print("发射子弹 biubiubiu")
 
             # 监听鼠标事件
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -123,25 +134,10 @@ class Game(object):
                     # 播放音效
                     self.player.fire()
                     self.boom_sound.play()
-                    print("发射子弹 biubiubiu")
 
-        # 监听键盘中的按键长按-> 元组(只有两种情况 0 或者 1) -> ASCII
-        pressed_keys = pygame.key.get_pressed()
-        # 判断向上的按键是否在长按(1)
-        if pressed_keys[pygame.K_UP] or pressed_keys[pygame.K_w]:
-            self.player.move_up()
-
-        # 判断向下的按键是否在长按(1)
-        if pressed_keys[pygame.K_DOWN] or pressed_keys[pygame.K_s]:
-            self.player.move_down()
-
-        # 判断向左的按键是否在长按(1)
-        if pressed_keys[pygame.K_LEFT] or pressed_keys[pygame.K_a]:
-            self.player.move_left()
-
-        # 判断向右的按键是否在长按(1)
-        if pressed_keys[pygame.K_RIGHT] or pressed_keys[pygame.K_d]:
-            self.player.move_right()
+    def event(self):
+        self.move_event()
+        self.common_event()
 
     # TODO 5.5 刷新窗口
     def update(self):
