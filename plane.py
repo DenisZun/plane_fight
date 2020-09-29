@@ -15,8 +15,8 @@ class Plane(ModelMixin):
     def fire(self):
         bullet_1 = Bullet(self.position_x + 5, self.position_y - 59, self.window, self.hero_bullet_image_path)
         bullet_2 = Bullet(self.position_x + 87, self.position_y - 59, self.window, self.hero_bullet_image_path)
-        bullet_1.display()
-        bullet_2.display()
+        # bullet_1.display()  # 贴图毫无意义
+        # bullet_2.display()
         self.bullet_list.append([bullet_1, bullet_2])
 
     def show_bullet(self):

@@ -24,7 +24,6 @@ class Enemy(ModelMixin):
         random_num = random.randint(1, 50)
         if random_num == 20:
             bullet = Bullet(self.position_x + 40, self.position_y + 60, self.window, self.enemy_bullet_image_path)
-            bullet.display()
             self.bullet_list.append(bullet)
 
     def show_bullet(self):

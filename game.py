@@ -139,6 +139,18 @@ class Game(object):
         self.move_event()
         self.common_event()
 
+    def roll_background(self):
+        # 实现背景滚动与刷新
+        self.background.move()  # 调用背景移动操作，构造背景向下移动效果
+        self.background.display()  # 刷新移动后的图片
+
+    def enemy_state(self):
+        # 判断敌机的情况(中弹与否)
+        for enemy in self.enemy_lis:
+            if not enemy.is_hit:
+                enemy.move()
+                enemy.fire()
+
     # TODO 5.5 刷新窗口
     def update(self):
         # 记得刷新游戏窗口
@@ -148,12 +160,8 @@ class Game(object):
     def run(self):
         # 死循环 在死循环中监听无论鼠标点击事件 或者键盘按键的事件
         while True:
-            self.background.move()  # 调用背景移动操作，构造背景向下移动效果
-            self.background.display()  # 刷新移动后的图片
-            for enemy in self.enemy_lis:
-                if not enemy.is_hit:
-                    enemy.move()
-                    enemy.fire()
+            self.roll_background()
+            self.enemy_state()
             self.draw()
             self.event()
             self.update()
