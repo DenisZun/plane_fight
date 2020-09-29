@@ -1,6 +1,7 @@
 import random
 import pygame
 import sys
+import time
 
 WINDOW_WIDTH, WINDOW_HEIGHT = 512, 768
 
@@ -28,7 +29,7 @@ class Plane(Model):
 
     def fire(self):
         bullet_1 = Bullet(self.position_x + 5, self.position_y - 59, self.window, self.hero_bullet_image_path)
-        bullet_2 = Bullet(self.position_x + 85, self.position_y - 59, self.window, self.hero_bullet_image_path)
+        bullet_2 = Bullet(self.position_x + 87, self.position_y - 59, self.window, self.hero_bullet_image_path)
         bullet_1.display()
         bullet_2.display()
         self.bullet_list.append([bullet_1, bullet_2])
@@ -70,10 +71,41 @@ class Bullet(Model):
     def move(self):
         self.position_y -= 5
 
+    def enemy_move(self):
+        self.position_y += 7
+
 
 # TODO 3.敌机类
 class Enemy(Model):
-    pass
+    def __init__(self, x, y, window, image_path):
+        super(Enemy, self).__init__(x, y, window, image_path)
+        self.enemy_bullet_image_path = "res/bullet_3.png"
+        self.bullet_list = []
+
+    def move(self):
+        self.position_y += 5
+        if self.position_y > WINDOW_HEIGHT:
+            self.position_x = random.randint(0, random.randint(0, WINDOW_WIDTH - 100))
+            self.position_y = 0
+
+    def fire(self):
+        random_num = random.randint(1, 50)
+        if random_num == 20:
+            bullet = Bullet(self.position_x + 40, self.position_y + 60, self.window, self.enemy_bullet_image_path)
+            bullet.display()
+            self.bullet_list.append(bullet)
+
+    def show_bullet(self):
+        delete_bullets = []
+        for bullet in self.bullet_list:
+            if bullet.position_y > WINDOW_HEIGHT:
+                delete_bullets.append(bullet)
+            else:
+                bullet.display()
+                bullet.enemy_move()
+
+        for out_window_bullet in delete_bullets:
+            self.bullet_list.remove(out_window_bullet)
 
 
 # TODO 4.背景类
@@ -116,6 +148,9 @@ class Game(object):
         # 本地资源图英雄飞机图片路径
         self.hero_image_path = "res/hero2.png"
         self.hero_bullet_image_path = "res/bullet_10.png"
+        # 敌机贴图
+        self.enemy_image_path = "res/img-plane_%d.png" % random.randint(1, 7)
+        # self.enemy_bullet_image_path = "res/bullet_3.png"
         # 加载背景音乐
         pygame.mixer.music.load("./res/bg2.ogg")
         # 加载音效
@@ -131,6 +166,14 @@ class Game(object):
         self.player = Plane(196, 660, self.window, self.hero_image_path)
         # 地图背景实例
         self.background = Background(0, 0, self.window, self.bg_image_path)
+        # 敌机对象实例
+        self.enemy1 = Enemy(random.randint(120, WINDOW_WIDTH - 120), 0, self.window, "res/img-plane_%d.png" % random.randint(1, 7))
+        self.enemy2 = Enemy(random.randint(120, WINDOW_WIDTH - 120), random.randint(0, WINDOW_HEIGHT - 68), self.window, "res/img-plane_%d.png" % random.randint(1, 7))
+        self.enemy3 = Enemy(random.randint(120, WINDOW_WIDTH - 120), random.randint(0, WINDOW_HEIGHT - 68), self.window, "res/img-plane_%d.png" % random.randint(1, 7))
+        self.enemy4 = Enemy(random.randint(120, WINDOW_WIDTH - 120), random.randint(0, WINDOW_HEIGHT - 68), self.window, "res/img-plane_%d.png" % random.randint(1, 7))
+        self.enemy5 = Enemy(random.randint(120, WINDOW_WIDTH - 120), random.randint(0, WINDOW_HEIGHT - 68), self.window, "res/img-plane_%d.png" % random.randint(1, 7))
+        self.enemy6 = Enemy(random.randint(120, WINDOW_WIDTH - 120), random.randint(0, WINDOW_HEIGHT - 68), self.window, "res/img-plane_%d.png" % random.randint(1, 7))
+        self.enemy_lis = [self.enemy1, self.enemy2, self.enemy3, self.enemy4, self.enemy5, self.enemy6]
 
     # TODO 5.2 描绘图形
     def draw(self):
@@ -139,6 +182,10 @@ class Game(object):
         self.background.display()
         # 添加飞机
         self.player.display()
+        for enemy in self.enemy_lis:
+            enemy.display()
+            enemy.show_bullet()
+            # enemy.move()
         # TODO bug记录
         self.player.show_bullet()
 
@@ -210,9 +257,14 @@ class Game(object):
         while True:
             self.background.move()  # 调用背景移动操作，构造背景向下移动效果
             self.background.display()  # 刷新移动后的图片
+            for enemy in self.enemy_lis:
+                enemy.move()
+                # time.sleep(0.5)
+                enemy.fire()
             self.draw()
             self.event()
             self.update()
+            time.sleep(0.01)
 
 
 def main():
