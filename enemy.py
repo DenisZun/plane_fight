@@ -1,4 +1,5 @@
 import random
+import pygame
 from model_mixin import ModelMixin
 from bullet import Bullet
 
@@ -11,7 +12,9 @@ class Enemy(ModelMixin):
         super(Enemy, self).__init__(x, y, window, image_path)
         self.enemy_bullet_image_path = "res/bullet_3.png"
         self.bullet_list = []
-        self.is_hit = False
+        self.is_hit = False  # 判断是否中弹
+        self.animax = 0  # 爆炸动画索引
+        self.boom_sound = pygame.mixer.Sound("./res/bomb.wav")  # 中弹后爆炸音效
 
     def move(self):
         self.position_y += 5
@@ -39,9 +42,23 @@ class Enemy(ModelMixin):
             self.bullet_list.remove(out_window_bullet)
 
     def display(self):
+        # 飞机爆炸效果在中弹后才调用
         if self.is_hit:
+            # 敌机中弹后先播放爆炸动画
+            self.explosion()
+            # 添加爆炸音效
+            self.boom_sound.play()
+        # 在爆炸动画结束后应重新贴敌机图
+        self.window.blit(self.image, (self.position_x, self.position_y))
+
+    def explosion(self):
+        # 敌机在中弹后的爆炸效果
+        if self.animax >= 21:
             self.position_x = random.randint(0, WINDOW_WIDTH - 100)
             self.position_y = 0
             self.is_hit = False
-
-        self.window.blit(self.image, (self.position_x, self.position_y))
+            self.animax = 0
+            self.image = pygame.image.load("res/img-plane_%d.png" % (random.randint(1, 7)))
+            return
+        self.image = pygame.image.load("res/bomb-%d.png" % (self.animax//3 + 1))
+        self.animax += 1
